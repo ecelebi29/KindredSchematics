@@ -174,7 +174,25 @@ internal static partial class Helper
         entities.Dispose();
     }
 
-	public static IEnumerable<Entity> GetAllEntitiesInBox<T>(float2 center, float2 halfSize)
+
+
+    public static IEnumerable<Entity> GetAllEntitiesInRadiusNonSpatial<T>(float2 center, float radius)
+    {
+        var entities = GetEntitiesByComponentType<T>(includeSpawn: true, includeDisabled: true);
+        foreach (var entity in entities)
+        {
+            if (!entity.Has<Translation>()) continue;
+            var pos = entity.Read<Translation>().Value;
+            if (math.distance(center, pos.xz) <= radius)
+            {
+                yield return entity;
+            }
+        }
+        entities.Dispose();
+    }
+
+
+    public static IEnumerable<Entity> GetAllEntitiesInBox<T>(float2 center, float2 halfSize)
 	{
         var spatialData = Core.GenerateCastle._TileModelLookupSystemData;
         var tileModelSpatialLookupRO = spatialData.GetSpatialLookupReadOnlyAndComplete(Core.GenerateCastle);
@@ -192,6 +210,21 @@ internal static partial class Helper
             var pos = entity.Read<Translation>().Value;
             if (Mathf.Abs(center.x - pos.x) <= halfSize.x && Mathf.Abs(center.y - pos.z) <= halfSize.y)
 			{
+                yield return entity;
+            }
+        }
+        entities.Dispose();
+    }
+
+    public static IEnumerable<Entity> GetAllEntitiesInBoxNonSpatial<T>(float2 center, float2 halfSize)
+    {
+        var entities = GetEntitiesByComponentType<T>(includeSpawn: true, includeDisabled: true);
+        foreach (var entity in entities)
+        {
+            if (!entity.Has<Translation>()) continue;
+            var pos = entity.Read<Translation>().Value;
+            if (Mathf.Abs(center.x - pos.x) <= halfSize.x && Mathf.Abs(center.y - pos.z) <= halfSize.y)
+            {
                 yield return entity;
             }
         }

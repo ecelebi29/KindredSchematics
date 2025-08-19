@@ -116,7 +116,7 @@ namespace KindredSchematics.Services
             return options;
         }
 
-        public void SaveSchematic(string name, float3? location = null, float? radius = null, Vector2? halfSize = null, int? territoryIndex = null)
+        public void SaveSchematic(string name, float3? location = null, float? radius = null, Vector2? halfSize = null, int? territoryIndex = null, bool nonSpatialSearch = false)
         {
             var startTime = Time.realtimeSinceStartup;
             float GetElapseTime() => Time.realtimeSinceStartup - startTime;
@@ -137,8 +137,18 @@ namespace KindredSchematics.Services
             }
 
             IEnumerable<Entity> entities;
-            if (radius != null) entities = Helper.GetAllEntitiesInRadius<Translation>(location.Value.xz, radius.Value);
-            else if (halfSize != null) entities = Helper.GetAllEntitiesInBox<Translation>(location.Value.xz, halfSize.Value);
+            if (radius != null)
+            {
+                entities = nonSpatialSearch ?
+                    Helper.GetAllEntitiesInRadiusNonSpatial<Translation>(location.Value.xz, radius.Value) :
+                    Helper.GetAllEntitiesInRadius<Translation>(location.Value.xz, radius.Value);
+            }
+            else if (halfSize != null)
+            {
+                entities = nonSpatialSearch ?
+                    Helper.GetAllEntitiesInBoxNonSpatial<Translation>(location.Value.xz, halfSize.Value) :
+                    Helper.GetAllEntitiesInBox<Translation>(location.Value.xz, halfSize.Value);
+            }
             else if (territoryIndex != null) entities = Helper.GetAllEntitiesInTerritory<Translation>(territoryIndex.Value);
             else
             {
@@ -146,7 +156,7 @@ namespace KindredSchematics.Services
                 return;
             }
 
-            Core.Log.LogInfo($"{GetElapseTime()} Gathered entities for {name}");
+            Core.Log.LogInfo($"{GetElapseTime()} Gathered {entities.Count()} entities for {name}");
 
             var entityPrefabDiffs = new List<EntityData>();
             var aabbs = new List<Aabb>();
@@ -158,7 +168,7 @@ namespace KindredSchematics.Services
                 if (!entity.Has<PrefabGUID>())
                     return false;
 
-                if (entity.Has<RoofTileData>())
+                if (entity.Has<RoofTileData>() && entity.Read<RoofTileData>().RoofCategory == RoofCategoryType.CastleRoof)
                     return false;
 
                 if (entity.Has<ChunkWaypoint>() && !entity.Has<BlueprintData>())
@@ -898,17 +908,12 @@ namespace KindredSchematics.Services
             {
                 if (heartEntity == Entity.Null) return;
 
-                if (heartEntity.Has<SyncBoundingBox>()) heartEntity.Remove<SyncBoundingBox>();
-                if (!heartEntity.Has<SyncToUserBitMask>())
+                if (heartEntity.Has<SyncBoundingBox>())
                 {
-                    heartEntity.Add<SyncToUserBitMask>();
-                    heartEntity.Write(new SyncToUserBitMask()
-                    {
-                        Value = new UserBitMask128()
-                        {
-                            _Value = new int4(-1, -1, -1, -1)
-                        }
-                    });
+                    var syncBoundingBox = heartEntity.Read<SyncBoundingBox>();
+                    syncBoundingBox.MaxX = 3200f; syncBoundingBox.MinX = -3200f;
+                    syncBoundingBox.MaxZ = 3200f; syncBoundingBox.MinZ = -3200f;
+                    heartEntity.Write(syncBoundingBox);
                 }
             }
         }

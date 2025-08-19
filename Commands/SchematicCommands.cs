@@ -40,12 +40,12 @@ namespace KindredSchematics.Commands
         }
 
         [Command("save", "s", description: "Saves the current area to a schematic", adminOnly: true)]
-        public static void SaveSchematic(ChatCommandContext ctx, string schematicName, float radius = 5)
+        public static void SaveSchematic(ChatCommandContext ctx, string schematicName, float radius = 5, bool nonSpatialSearch = false)
         {
             var userEntity = ctx.Event.SenderUserEntity;
             var userPos = userEntity.Read<Translation>().Value;
 
-            Core.SchematicService.SaveSchematic(schematicName, userPos, radius: radius);
+            Core.SchematicService.SaveSchematic(schematicName, userPos, radius: radius, nonSpatialSearch: nonSpatialSearch);
             ctx.Reply($"Saved schematic {schematicName}");
         }
 
@@ -60,7 +60,7 @@ namespace KindredSchematics.Commands
         }
 
         [Command("savebox", "sb", description: "Saves the current area to a schematic", adminOnly: true)]
-        public static void SaveSchematicBox(ChatCommandContext ctx, string schematicName)
+        public static void SaveSchematicBox(ChatCommandContext ctx, string schematicName, bool nonSpatialSearch = false)
         {
             if (!cornerPos.ContainsKey(ctx.Event.SenderUserEntity))
             {
@@ -72,7 +72,7 @@ namespace KindredSchematics.Commands
             var corner = cornerPos[ctx.Event.SenderUserEntity];
             var halfSize = math.abs(charPos.xz - corner) / 2;
             var center = (charPos.xz + corner) / 2;
-            Core.SchematicService.SaveSchematic(schematicName, new float3(center.x, charPos.y, center.y), halfSize: halfSize);
+            Core.SchematicService.SaveSchematic(schematicName, new float3(center.x, charPos.y, center.y), halfSize: halfSize, nonSpatialSearch: nonSpatialSearch);
             ctx.Reply($"Saved schematic {schematicName}");
             cornerPos.Remove(ctx.Event.SenderUserEntity);
         }
@@ -222,6 +222,8 @@ namespace KindredSchematics.Commands
             var entitiesToDestroy = Helper.GetEntitiesByComponentType<PhysicsCustomTags>(includeDisabled: true);
             foreach (var entity in entitiesToDestroy)
             {
+                var pct = entity.Read<PhysicsCustomTags>();
+                if (pct.Value != 0) continue;
                 DestroyUtility.Destroy(Core.EntityManager, entity);
             }
             ctx.Reply($"All {entitiesToDestroy.Length} schematic spawned entities marked for deletion");
@@ -235,6 +237,8 @@ namespace KindredSchematics.Commands
             var entitiesToDestroy = Helper.GetAllEntitiesInRadius<PhysicsCustomTags>(charPos.xz, range).ToList();
             foreach (var entity in entitiesToDestroy)
             {
+                var pct = entity.Read<PhysicsCustomTags>();
+                if (pct.Value != 0) continue;
                 DestroyUtility.Destroy(Core.EntityManager, entity);
             }
             ctx.Reply($"Removed {entitiesToDestroy.Count} schematic spawned entities within {range}m");
