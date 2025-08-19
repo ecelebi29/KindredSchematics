@@ -99,5 +99,25 @@ namespace KindredSchematics.Commands
                 }
             }
         }
+
+      /*  [Command("clearwaypointbrick", "cw", description: "Clears all waypoints for a user", adminOnly: true)]
+        public static void ClearWaypointBrick(ChatCommandContext ctx, FoundPlayer player)
+        {
+            var userEntity = player.Value.UserEntity;
+            var charEntity = player.Value.CharEntity;
+            if (userEntity.Equals(Entity.Null) || charEntity.Equals(Entity.Null))
+            {
+                ctx.Reply("User or character entity not found.");
+                return;
+            }
+            var waypointBuffer = Core.EntityManager.GetBuffer<UnlockedWaypointElement>(userEntity);
+            if (waypointBuffer.Length == 0)
+            {
+                ctx.Reply($"{player.Value.CharacterName} has no waypoints to clear.");
+                return;
+            }
+            waypointBuffer.Clear();
+            ctx.Reply($"Cleared all waypoints for {player.Value.CharacterName}.");
+        }*/
     }
 }

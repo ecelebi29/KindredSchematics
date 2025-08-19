@@ -55,7 +55,7 @@ The Palette System offers a powerful toolset for managing prefabs with ease:
 ### Build Commands
 
 - `.build free`  
-  - Turns on debug mode free building. Building/Crafting will have no cost.  
+  - Turns on debug mode free building. Building/Crafting/Research/Repairs all will have no cost.  
   - DO NOT USE THIS ON A LIVE SERVER. There is a config file to disable this command for your live server.
 
 - `.build restrictions`  
@@ -64,13 +64,31 @@ The Palette System offers a powerful toolset for managing prefabs with ease:
   - Shortcut: `.build r`
 
 - `.build disablefreebuild`  
-  - Disables freebuild and restrictionless build modes. Also disables spawning in the glow library. You will need to edit the config to turn them back on (useful for live servers).
+  - Disables freebuild and restrictionless build settings. Also disables spawning in the glow library. You will need to edit the config to turn them back on (useful for live servers).
 
 - `.build mode`  
   - Toggles build mode.
 
 - `.build setcursor`  
   - Sets a cursor prefab to place tiles.
+
+- `.build ysnap`
+  - Toggles Y-value snapping when placing objects in build mode.
+
+- `.build plane`
+  - Toggles using AimPositionPlane (default ON) or AimPosition for object movement in build mode
+
+- `.build yoffset (#)`
+  - Sets Y-axis offset when placing objects in build mode
+	
+- `.build xsnap`
+  - Toggles X-value snapping when placing objects in build mode
+
+- `.build zsnap`
+  - Toggles Z-value snapping when placing objects in build mode
+
+- `.build snapstatus`
+  - Shows current snapping settings for build mode
 
 - `.build clearradius (radius)`  
   - Deletes out everything in a radius centered on you.
@@ -99,9 +117,6 @@ The Palette System offers a powerful toolset for managing prefabs with ease:
 
 - `.build delete`  
   - Deletes the tile model you are looking at.
-
-- `.build rotate`  
-  - Rotates a tile at your aimed position.
 
 - `.build changeheart`  
   - Changes the heart of the tile you are looking at to your fallback heart.
@@ -133,6 +148,7 @@ The Palette System offers a powerful toolset for managing prefabs with ease:
 
 - `.build teleporters`  
   - Makes all teleporters able to traverse any distance across the world (WIP not optimal how it works currently)
+
 
 ### Palette Commands
 
