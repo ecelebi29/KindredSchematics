@@ -1,5 +1,6 @@
 using Il2CppSystem.Text;
 using KindredSchematics.Commands.Converter;
+using KindredSchematics.Data;
 using KindredSchematics.Services;
 using ProjectM;
 using ProjectM.CastleBuilding;
@@ -15,6 +16,7 @@ using Unity.Mathematics;
 using Unity.Physics;
 using Unity.Transforms;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 using VampireCommandFramework;
 using Math = System.Math;
 
@@ -298,6 +300,12 @@ namespace KindredSchematics.Commands
                 return;
             }
 
+            if (closest.Has<ChunkWaypoint>() && prefabGuid != Prefabs.TM_Workstation_Waypoint_Castle)
+            {
+                ctx.Reply($"{prefabGuid.LookupName()} is a nonCastle waygate and cannot have its heart changed");
+                return;
+            }
+
             Core.SchematicService.GetFallbackCastleHeart(ctx.Event.SenderCharacterEntity, out var castleHeartEntity, out var ownerDoors, out var ownerChests);
             if (!ownerDoors && closest.Has<Door>() ||
                 !ownerChests && Helper.EntityIsChest(closest))
@@ -372,6 +380,9 @@ namespace KindredSchematics.Commands
             var tiles = Helper.GetAllEntitiesInRadius<CastleHeartConnection>(closestPos, range);
             foreach (var tile in tiles)
             {
+                if (tile.Has<ChunkWaypoint>() && tile.Read<PrefabGUID>() != Prefabs.TM_Workstation_Waypoint_Castle)
+                    continue;
+
                 if (!ownerDoors && tile.Has<Door>() || !ownerChests && Helper.EntityIsChest(tile))
                 {
                     if (tile.Has<CastleHeartConnection>())
@@ -710,6 +721,51 @@ namespace KindredSchematics.Commands
                         teleportEntity.Remove<DisabledDueToNoPlayersInRange>();
                 }
                 teleportEntity.Write(all);
+            }
+        }
+
+      //  [Command("swaproof", adminOnly: true)]
+        public static void SwapRoof(ChatCommandContext ctx)
+        {
+            var charPos = ctx.Event.SenderCharacterEntity.Read<Translation>().Value;
+            var gridPos = Helper.ConvertPosToTileGrid(charPos);
+
+            var floorOn = Helper.GetAllEntitiesInRadius<CastleFloor>(charPos.xz, 5).
+                Where(f =>
+                {
+                    if (!f.Has<TileBounds>())
+                        return false;
+                    var tb = f.Read<TileBounds>().Value;
+                    return tb.Min.x <= gridPos.x && tb.Max.x >= gridPos.x && tb.Min.y <= gridPos.z && tb.Max.y >= gridPos.z;
+                }).
+                Where(f =>
+                {
+                    var y = f.Read<Translation>().Value.y;
+                    var height = f.Read<StaticTransformCompatible>().NonStaticTransform_Height;
+                    return charPos.y >= y && charPos.y <= y + height;
+                }).
+                FirstOrDefault();
+
+            if (floorOn == Entity.Null)
+            {
+                ctx.Reply("No floor found under you");
+                return;
+            }
+
+            var room = floorOn.Read<CastleRoomConnection>().RoomEntity.GetEntityOnServer();
+            if (room == Entity.Null)
+            {
+                ctx.Reply("No room found for the floor under you");
+                return;
+            }
+
+            var floorBuffer = Core.EntityManager.GetBuffer<CastleRoomFloorsBuffer>(room);
+            foreach(var floorEntry in floorBuffer)
+            {
+                var floor = floorEntry.FloorEntity.GetEntityOnServer();
+                var castleFloor = floor.Read<CastleFloor>();
+                castleFloor.RoofType = ProjectM.Roofs.RoofCategoryType.RusticHouse;
+                floor.Write(castleFloor);
             }
         }
     }

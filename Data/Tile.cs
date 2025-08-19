@@ -4,6 +4,7 @@ using Stunlock.Core;
 using System;
 using System.Collections.Generic;
 using Unity.Entities;
+using ProjectM.Gameplay.Scripting;
 
 namespace KindredSchematics.Data;
 internal static class Tile
@@ -38,6 +39,10 @@ internal static class Tile
                 prefab2 != Entity.Null && prefab2.Has<CastleHeart>())
                 continue;
 
+            if (prefab1 != Entity.Null && prefab1.Has<Script_Lucie_Potion_DataServer>() ||
+                prefab2 != Entity.Null && prefab2.Has<Script_Lucie_Potion_DataServer>())
+                continue;
+
             Named[name] = prefabGuid;
             NameFromPrefab[prefabGuid.GuidHash] = name;
             LowerCaseNameToPrefab[name.ToLower()] = prefabGuid;
@@ -70,6 +75,10 @@ internal static class Tile
 
             if (prefab1 != Entity.Null && prefab1.Has<CastleHeart>() ||
                 prefab2 != Entity.Null && prefab2.Has<CastleHeart>())
+                continue;
+
+            if (prefab1 != Entity.Null && prefab1.Has<Script_Lucie_Potion_DataServer>() ||
+                prefab2 != Entity.Null && prefab2.Has<Script_Lucie_Potion_DataServer>())
                 continue;
 
             Named[name] = prefabGuid;

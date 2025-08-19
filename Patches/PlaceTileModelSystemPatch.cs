@@ -19,7 +19,7 @@ static class PlaceTileModelSystemPatch
         foreach (var buildEvent in buildEvents)
         {
             var btme = buildEvent.Read<BuildTileModelEvent>();
-            if (btme.PrefabGuid == Data.Prefabs.TM_BloodFountain_CastleHeart)
+            if (btme.PrefabGuid == Data.Prefabs.TM_BloodFountain_CastleHeart || btme.PrefabGuid == Data.Prefabs.TM_BloodFountain_CastleHeart_Rebuilding)
             {
                 var fromCharacter = buildEvent.Read<FromCharacter>();
                 var user = fromCharacter.User.Read<User>();
