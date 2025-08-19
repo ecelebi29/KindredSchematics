@@ -6,6 +6,7 @@ using KindredSchematics.Data;
 using KindredSchematics.Services;
 using ProjectM;
 using ProjectM.CastleBuilding;
+using ProjectM.Network;
 using ProjectM.Physics;
 using ProjectM.Scripting;
 using System.Collections;
@@ -87,6 +88,9 @@ internal static class Core
         // Fix an old bug where players had immortal removed
         AddImmortalToPlayers();
 
+        // Fix removal of syncboundingbox from hearts
+        FixCastleHeartsMissing();
+
         Log.LogInfo($"KindredSchematics Initialized");
 	}
 	private static bool _hasInitialized = false;
@@ -134,8 +138,10 @@ internal static class Core
         queryBuilder.WithOptions(EntityQueryOptions.IncludeDisabled);
 
         var query = Core.EntityManager.CreateEntityQuery(ref queryBuilder);
+        queryBuilder.Dispose();
 
         var entities = query.ToEntityArray(Allocator.Temp);
+        query.Dispose();
 
         foreach (var entity in entities)
         {
@@ -146,5 +152,31 @@ internal static class Core
             });
         }
         entities.Dispose();
+    }
+
+    static void FixCastleHeartsMissing()
+    {
+        var eqb = new EntityQueryBuilder(Allocator.Temp).
+            AddAll(new(Il2CppType.Of<CastleHeart>(), ComponentType.AccessMode.ReadWrite)).
+            AddNone(new(Il2CppType.Of<SyncBoundingBox>(), ComponentType.AccessMode.ReadWrite));
+
+        var query = Core.EntityManager.CreateEntityQuery(ref eqb);
+
+        var entities = query.ToEntityArray(Allocator.Temp);
+        query.Dispose();
+
+        foreach (var entity in entities)
+        {
+            entity.Add<SyncBoundingBox>();
+            entity.Write(new SyncBoundingBox
+            {
+                MinX = -3200,
+                MaxX = 3200,
+                MinZ = -3200,
+                MaxZ = 3200
+            });
+        }
+        entities.Dispose();
+
     }
 }
