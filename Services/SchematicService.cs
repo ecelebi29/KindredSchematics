@@ -19,7 +19,6 @@ using System.Text;
 using System.Text.Json;
 using Unity.Collections;
 using Unity.Entities;
-using Unity.Entities.UniversalDelegates;
 using Unity.Mathematics;
 using Unity.Physics;
 using Unity.Transforms;
@@ -477,8 +476,14 @@ namespace KindredSchematics.Services
             Core.RespawnPrevention.PreventRespawns();
             yield return null;
             var entitiesDestroyingThisFrame = 0;
+            List<Entity> spawnChains = [];
             foreach (var entity in entitiesToDestroy)
             {
+                if (entity.Has<SpawnChainChild>())
+                {
+                    var scc = entity.Read<SpawnChainChild>();
+                    spawnChains.Add(scc.SpawnChain);
+                }
                 Helper.DestroyEntityAndCastleAttachments(entity);
                 entitiesDestroyingThisFrame++;
 
@@ -488,6 +493,29 @@ namespace KindredSchematics.Services
                     yield return null;
                     lastYieldTime = Time.realtimeSinceStartup;
                 }
+            }
+
+            var timesChained = 0;
+            while (spawnChains.Count > 0)
+            {
+                for(var i = spawnChains.Count - 1; i >= 0; i--)
+                {
+                    var scc = spawnChains[i];
+                    int lengthOfChain;
+                    unsafe
+                    {
+                        var constants = (SpawnChainBlobAsset*)scc.Read<SpawnChainData.SpawnChainConstants>().Data.GetUnsafePtr();
+                        lengthOfChain = constants->ChainElements.Length;
+                    }
+                    var ace = scc.Read<SpawnChainData.ActiveChildElement>();
+                    var curChild = ace.ActiveEntity;
+                    if (curChild.Read<PrefabGUID>().Equals(Prefabs.TM_HiddenObject) ||
+                        (timesChained > lengthOfChain && ace.ChainElementIndex == 0))
+                        spawnChains.RemoveAt(i);
+                    else
+                        Helper.DestroyEntityAndCastleAttachments(curChild);
+                }
+                yield return null;
             }
 
             MessageUser("Starting to load in the schematic", true);
