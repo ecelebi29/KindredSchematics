@@ -31,5 +31,6 @@ public static class Prefabs
     public static readonly PrefabGUID TM_Castle_Wall_Tier02_Stone_Window = new(-764944520);
     public static readonly PrefabGUID TM_BloodFountain_CastleHeart = new(-485210554);
     public static readonly PrefabGUID TM_BloodFountain_CastleHeart_Rebuilding = new(-600018251);
+    public static readonly PrefabGUID TM_HiddenObject = new(162560418);
     public static readonly PrefabGUID TM_Workstation_Waypoint_Castle = new(-148794951);
 }
