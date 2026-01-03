@@ -295,10 +295,8 @@ internal static partial class Helper
         var spatialData = Core.GenerateCastle._TileModelLookupSystemData;
         var tileModelSpatialLookupRO = spatialData.GetSpatialLookupReadOnlyAndComplete(Core.GenerateCastle);
 
-        var gridPosMin = ConvertPosToTileGrid(aabb.Min);
-        var gridPosMax = ConvertPosToTileGrid(aabb.Max);
-        var bounds = new BoundsMinMax(Mathf.FloorToInt(gridPosMin.x), Mathf.FloorToInt(gridPosMin.y),
-                                      Mathf.CeilToInt(gridPosMax.x), Mathf.CeilToInt(gridPosMax.y));
+        var bounds = new BoundsMinMax(Mathf.FloorToInt(aabb.Min.x), Mathf.FloorToInt(aabb.Min.z),
+                                      Mathf.CeilToInt(aabb.Max.x), Mathf.CeilToInt(aabb.Max.z));
 
         var entities = tileModelSpatialLookupRO.GetEntities(ref bounds, TileType.All);
         foreach (var entity in entities)
