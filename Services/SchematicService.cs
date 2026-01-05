@@ -501,6 +501,13 @@ namespace KindredSchematics.Services
                 for(var i = spawnChains.Count - 1; i >= 0; i--)
                 {
                     var scc = spawnChains[i];
+
+                    if (!Core.EntityManager.Exists(scc))
+                    {
+                        spawnChains.RemoveAt(i);
+                        continue;
+                    }
+
                     int lengthOfChain;
                     unsafe
                     {
