@@ -829,6 +829,20 @@ namespace KindredSchematics.Services
                 }
             } while (entitiesLoaded.Count < schematic.entities.Length);
 
+            var sys = Core.Server.GetExistingSystemManaged<ModificationSystem>();
+            var modificationRegistry = sys.Registry;
+
+            foreach (var entity in createdEntities)
+            {
+                if (entity.Has<CastleWallPillarImmaterial>())
+                {
+                    var castleWallPillarImmaterial = entity.Read<CastleWallPillarImmaterial>();
+                    var buffer = Core.EntityManager.GetBuffer<CastleBuildingAttachToParentsBuffer>(entity);
+                    PillarImmaterialUtility.UpdatePillarImmaterial(Core.EntityManager, ref modificationRegistry, entity, ref castleWallPillarImmaterial, ref buffer);
+                    entity.Write(castleWallPillarImmaterial);
+                }
+            }
+
             Core.Log.LogInfo($"{GetElapseTime():f4} Finished Loading Schematic");
             var message = new FixedString512Bytes("Finished Loading Schematic");
             ServerChatUtils.SendSystemMessageToClient(Core.EntityManager, userEntity.Read<User>(), ref message);
