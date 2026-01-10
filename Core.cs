@@ -71,6 +71,7 @@ internal static class Core
 
         FoundBuffConverter.InitializeBuffPrefabs();
         Tile.Populate();
+        Chains.Populate();
 
         // Fix immortal plants to prevent infinite fire bug
         var entities = Helper.GetEntitiesByComponentTypes<Immortal, EntityCategory>(includeDisabled: true);

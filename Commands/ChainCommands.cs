@@ -20,24 +20,17 @@ namespace KindredSchematics.Commands
         [Command("search", description: "Search for Chain_ prefabs by name", adminOnly: true)]
         public static void SearchChain(ChatCommandContext ctx, string searchTerm, int page = 1)
         {
-            var matches = new List<(string Name, PrefabGUID Prefab)>();
-
-            foreach (var kvp in Core.PrefabCollection._SpawnableNameToPrefabGuidDictionary)
-            {
-                if (kvp.Key.StartsWith("Chain_", StringComparison.OrdinalIgnoreCase) &&
-                    kvp.Key.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
-                {
-                    matches.Add((kvp.Key, kvp.Value));
-                }
-            }
+            var matches = Data.Chains.ChainPrefabs
+                .Where(kvp => kvp.Key.Contains(searchTerm, StringComparison.OrdinalIgnoreCase))
+                .OrderBy(kvp => kvp.Key)
+                .Select(kvp => (kvp.Key, kvp.Value))
+                .ToList();
 
             if (matches.Count == 0)
             {
                 ctx.Reply($"No Chain_ prefabs found matching '{searchTerm}'");
                 return;
             }
-
-            matches = matches.OrderBy(m => m.Name).ToList();
 
             var sb = new System.Text.StringBuilder();
             var totalCount = matches.Count;
@@ -52,78 +45,19 @@ namespace KindredSchematics.Commands
             sb.AppendLine($"Found {totalCount} Chain_ prefabs matching '{searchTerm}'{pageLabel}:");
             foreach (var (name, prefab) in matches)
             {
-                sb.AppendLine($"({prefab.GuidHash}) {name.Replace(searchTerm, $"<b>{searchTerm}</b>", StringComparison.OrdinalIgnoreCase)}");
+                sb.AppendLine($"({prefab.GuidHash}) {name}");
             }
 
             ctx.Reply(sb.ToString());
         }
 
+
         [Command("spawn", description: "Spawn Chain_ prefab by name or GUID", adminOnly: true)]
-        public static void SpawnChain(ChatCommandContext ctx, string nameOrGuid)
+        public static void SpawnChain(ChatCommandContext ctx, Converter.FoundChain chain)
         {
-            PrefabGUID prefabGuid;
-            string prefabName = null;
-
-            // Try to parse as GUID first
-            if (int.TryParse(nameOrGuid, out int guidHash))
+            if (!Core.PrefabCollection._PrefabGuidToEntityMap.TryGetValue(chain.Value, out var prefabEntity))
             {
-                prefabGuid = new PrefabGUID(guidHash);
-
-                // Find the name from the dictionary
-                foreach (var kvp in Core.PrefabCollection._SpawnableNameToPrefabGuidDictionary)
-                {
-                    if (kvp.Value.GuidHash == guidHash)
-                    {
-                        prefabName = kvp.Key;
-                        break;
-                    }
-                }
-
-                if (prefabName == null)
-                {
-                    prefabName = $"Unknown_{guidHash}";
-                }
-            }
-            else
-            {
-                // Search by name in Chain_ prefabs
-                var matches = new List<(string Name, PrefabGUID Prefab)>();
-
-                foreach (var kvp in Core.PrefabCollection._SpawnableNameToPrefabGuidDictionary)
-                {
-                    if (kvp.Key.StartsWith("Chain_", StringComparison.OrdinalIgnoreCase) &&
-                        (kvp.Key.Equals(nameOrGuid, StringComparison.OrdinalIgnoreCase) ||
-                         kvp.Key.Contains(nameOrGuid, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        matches.Add((kvp.Key, kvp.Value));
-                    }
-                }
-
-                if (matches.Count == 0)
-                {
-                    ctx.Reply($"No Chain_ prefab found matching '{nameOrGuid}'");
-                    return;
-                }
-
-                if (matches.Count > 1)
-                {
-                    ctx.Reply($"Multiple matches found for '{nameOrGuid}':");
-                    foreach (var (name, prefab) in matches.Take(10))
-                    {
-                        ctx.Reply($"  {name} ({prefab.GuidHash})");
-                    }
-                    ctx.Reply("Please be more specific");
-                    return;
-                }
-
-                prefabGuid = matches[0].Prefab;
-                prefabName = matches[0].Name;
-            }
-
-            // Spawn the prefab
-            if (!Core.PrefabCollection._PrefabGuidToEntityMap.TryGetValue(prefabGuid, out var prefabEntity))
-            {
-                ctx.Reply($"Prefab not found in collection");
+                ctx.Reply($"Prefab not found.");
                 return;
             }
 
@@ -135,8 +69,9 @@ namespace KindredSchematics.Commands
             entity.Write(new Translation { Value = spawnPos });
             entity.Write(new Rotation { Value = rot });
 
-            ctx.Reply($"Spawned {prefabName}");
+            ctx.Reply($"Spawned {chain.Name}");
         }
+
 
         [Command("delete", description: "Delete the chain entity at cursor and prevent respawn", adminOnly: true)]
         public static void DeleteChain(ChatCommandContext ctx)
