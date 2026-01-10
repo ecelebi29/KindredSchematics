@@ -1,4 +1,6 @@
-﻿using ProjectM;
+﻿using KindredSchematics.Data;
+using ProjectM;
+using ProjectM.CastleBuilding;
 using ProjectM.Tiles;
 using Stunlock.Core;
 using System;
@@ -8,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Unity.Entities;
 using Unity.Transforms;
+using UnityEngine;
 using VampireCommandFramework;
 
 namespace KindredSchematics.Commands;
@@ -330,5 +333,83 @@ internal class ModifyComponentCommands
 
         ctx.Reply($"Move unlocked {tiles.Count()} tiles in territory {territoryIndex}");
     }
+
+    [Command("protect", description: "Makes the tile closest to mouse cursor invulnerable", adminOnly: true)]
+    public static void ProtectTile(ChatCommandContext ctx)
+    {
+        var aimPos = ctx.Event.SenderCharacterEntity.Read<EntityAimData>().AimPosition;
+
+        var closest = Helper.FindClosestTilePosition(aimPos);
+        Buffs.AddBuff(ctx.Event.SenderUserEntity, closest, Prefabs.Admin_Invulnerable_Buff, duration: -1, immortal: true);
+
+        ctx.Reply($"Made tile {closest.Read<PrefabGUID>().LookupName()} invulnerable");
+    }
+
+    [Command("unprotect", description: "Removes invulnerability from the tile closest to mouse cursor", adminOnly: true)]
+    public static void UnprotectTile(ChatCommandContext ctx)
+    {
+        var aimPos = ctx.Event.SenderCharacterEntity.Read<EntityAimData>().AimPosition;
+
+        var closest = Helper.FindClosestTilePosition(aimPos);
+        Buffs.RemoveBuff(closest, Prefabs.Admin_Invulnerable_Buff);
+
+        ctx.Reply($"Made tile {closest.Read<PrefabGUID>().LookupName()} vulnerable");
+    }
+
+    [Command("protectall", "ph", description: "Applies invulnerable buff to all structures connected to current territory castle heart", adminOnly: true)]
+    public static void ProtectHeart(ChatCommandContext ctx)
+    {
+        SetHeartProtection(ctx, true);
+    }
+
+    [Command("unprotectall", "uph", description: "Removes invulnerable buff from all structures connected to current territory castle heart", adminOnly: true)]
+    public static void UnprotectHeart(ChatCommandContext ctx)
+    {
+        SetHeartProtection(ctx, false);
+    }
+
+    private static void SetHeartProtection(ChatCommandContext ctx, bool protect)
+    {
+        var territoryIndex = Helper.GetEntityTerritoryIndex(ctx.Event.SenderCharacterEntity);
+        if (territoryIndex == -1)
+        {
+            ctx.Reply("You are not in a territory");
+            return;
+        }
+
+        var targetHeart = Core.CastleTerritory.GetHeartForTerritory(territoryIndex);
+        if (targetHeart == Entity.Null)
+        {
+            ctx.Reply("No castle heart found in this territory");
+            return;
+        }
+
+        var allEntities = Helper.GetEntitiesByComponentType<CastleHeartConnection>(includeDisabled: true);
+        int affectedCount = 0;
+
+        foreach (var entity in allEntities)
+        {
+            var connection = entity.Read<CastleHeartConnection>();
+
+            if (connection.CastleHeartEntity.GetEntityOnServer().Equals(targetHeart))
+            {
+                if (protect)
+                {
+                    Buffs.AddBuff(ctx.Event.SenderUserEntity, entity, Prefabs.Admin_Invulnerable_Buff, duration: -1, immortal: true);
+                }
+                else
+                {
+                    Buffs.RemoveBuff(entity, Prefabs.Admin_Invulnerable_Buff);
+                }
+                affectedCount++;
+            }
+        }
+
+        allEntities.Dispose();
+
+        var action = protect ? "Protected" : "Removed protection from";
+        ctx.Reply($"{action} {affectedCount} structures connected to castle heart");
+    }
+
 }
 

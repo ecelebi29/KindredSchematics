@@ -33,4 +33,8 @@ public static class Prefabs
     public static readonly PrefabGUID TM_BloodFountain_CastleHeart_Rebuilding = new(-600018251);
     public static readonly PrefabGUID TM_HiddenObject = new(162560418);
     public static readonly PrefabGUID TM_Workstation_Waypoint_Castle = new(-148794951);
+    public static readonly PrefabGUID Buff_General_Immaterial = new(227784838);
+    public static readonly PrefabGUID Admin_Invulnerable_Buff = new(-480024072);
+
+
 }
