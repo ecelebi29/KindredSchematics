@@ -168,6 +168,23 @@ The Palette System offers a powerful toolset for managing prefabs with ease:
   - Clears the build palette.  
   - Shortcut: `.pal c`
 
+
+### Chainspawn Commands
+
+- `.chain search (searchTerm) [page]`
+  - Search for Chain_ prefabs by name. These are nodes that will respawn.
+  - Example: `.chain search tree`
+  - Example: `.chain search tree 2` (second page)
+
+- `.chain spawn (nameOrGuid)`
+  - Spawn a Chain_ prefab by name or GUID at your cursor position.
+  - Example: `.chain spawn Chain_Tree_Gloomrot_01`
+  - Example: `.chain spawn 123456789`
+
+- `.chain delete`
+  - Delete the chain entity at cursor and prevent it from respawning.
+
+
 ### Modifytile Commands
 
 - `.modifytile lock`  
@@ -231,6 +248,26 @@ The Palette System offers a powerful toolset for managing prefabs with ease:
 - `.modifytile pavementspeed (speed) (territoryIndex)`  
   - Changes the PavementBonusSource movement speed for all tiles in the specified territory.  
   - Shortcut: `.modt pavementspeed (speed) (territoryIndex)`
+ 
+- `.modifytile protect`
+  - Makes the tile you are looking at invulnerable (can't be damaged).
+  - Shortcut: `.modt protect`
+
+- `.modifytile unprotect`
+  - Removes invulnerability from the tile you are looking at (can be damaged).
+  - Shortcut: `.modt unprotect`
+
+- `.modifytile protectall`
+  - Applies invulnerable buff to all structures connected to the castle heart in your current territory.
+  - Works on structures both inside and outside territory borders as long as they're connected to the heart.
+  - Shortcut: `.modt protectall`
+  - Alias: `.modt ph`
+
+- `.modifytile unprotectall`
+  - Removes invulnerable buff from all structures connected to the castle heart in your current territory.
+  - Shortcut: `.modt unprotectall`
+  - Alias: `.modt uph`
+
 
 ### Schematic Commands
 - `.schematic list`
@@ -238,7 +275,7 @@ The Palette System offers a powerful toolset for managing prefabs with ease:
   - Shortcut: `.sc l`
 - `.schematic save (schematicName) (Radius)`
   - saves a schematic of anything within or attached to tiles within the radius. 
-	- Shortcut: `.sc s (schematicName) (Radius)`
+  - Shortcut: `.sc s (schematicName) (Radius)`
 - `.schematic setcorner`
   - sets corner coordinates for rectangular schematic save at your current position
   - Shortcut: `.sc sc`
@@ -325,7 +362,7 @@ The Palette System offers a powerful toolset for managing prefabs with ease:
   
 ## Eventual To-Do/Possible features
 - Come find out in the V Rising Modding Discord!
-- 
+
 ## Credits
 - Thanks to [Mfoltz](https://github.com/mfoltz) for the original build mode idea in VCreate and for his consultation on ability replacement/spatial lookups.
 - Thanks to Rendy for the consult on snap.
