@@ -131,8 +131,9 @@ The Palette System offers a powerful toolset for managing prefabs with ease:
 - `.build lookupheart`  
   - Looks up the heart of the tile you are looking at.
 
-- `.build setfallbackheart (useOwnerDoors=true) (useOwnerChests=true)`  
+- `.build setfallbackheart (territoryIndex) (useOwnerDoors=true) (useOwnerChests=true)`  
   - Sets the fallback castle heart for loading or building without restrictions to the nearby heart.  
+  - Optionally specify a territory index to use that territory's heart instead of the nearby one.  
   - You can also specify whether to use Owner or Neutral for doors and chests. Defaults to Owner.
 
 - `.build neutraldoors`  

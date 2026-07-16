@@ -483,9 +483,23 @@ namespace KindredSchematics.Commands
             }
         }
 
-        [Command("setfallbackheart", "sfh", description: "Sets the fallback castle heart for loading or building without restrictions to the nearby heart", adminOnly: true)]
-        public static void SetFallbackHeart(ChatCommandContext ctx, bool useOwnerDoor = true, bool useOwnerChest = true)
+        [Command("setfallbackheart", "sfh", description: "Sets the fallback castle heart for loading or building without restrictions to the nearby heart or the specified territory's heart", adminOnly: true)]
+        public static void SetFallbackHeart(ChatCommandContext ctx, int? territoryIndex = null, bool useOwnerDoor = true, bool useOwnerChest = true)
         {
+            if (territoryIndex.HasValue)
+            {
+                var territoryHeart = Core.CastleTerritory.GetHeartForTerritory(territoryIndex.Value);
+                if (territoryHeart == Entity.Null)
+                {
+                    ctx.Reply($"No castle heart found on territory {territoryIndex.Value}");
+                    return;
+                }
+
+                Core.SchematicService.SetFallbackCastleHeart(ctx.Event.SenderCharacterEntity, territoryHeart, useOwnerDoor, useOwnerChest);
+                ctx.Reply($"Fallback castle heart set to territory {territoryIndex.Value}'s heart");
+                return;
+            }
+
             var castleHearts = Helper.GetEntitiesByComponentType<CastleHeart>();
             var playerPos = ctx.Event.SenderCharacterEntity.Read<LocalToWorld>().Position;
             try
