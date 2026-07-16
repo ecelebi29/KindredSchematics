@@ -63,6 +63,9 @@ class BuildService
     Dictionary<Entity, bool> playerXSnapEnabled = [];
     Dictionary<Entity, bool> playerYSnapEnabled = [];
     Dictionary<Entity, bool> playerZSnapEnabled = [];
+    Dictionary<Entity, float> playerGridSize = [];
+
+    public readonly float[] AllowedGridSizes = { 0.125f, 0.25f, 0.5f, 1f };
 
     static ModifyUnitStatBuff_DOTS Cooldown = new()
     {
@@ -564,6 +567,18 @@ class BuildService
         return false;
     }
 
+    public float GetGridSize(Entity charEntity)
+    {
+        if (playerGridSize.TryGetValue(charEntity, out var gridSize))
+            return gridSize;
+        return 1f;
+    }
+
+    public void SetGridSize(Entity charEntity, float gridSize)
+    {
+        playerGridSize[charEntity] = gridSize;
+    }
+
     public bool ToggleYSnapping(Entity charEntity)
     {
         if (!playerYSnapEnabled.TryGetValue(charEntity, out var isEnabled))
@@ -600,6 +615,13 @@ class BuildService
         return false;
     }
 
+    static float SnapTo(float value, float gridSize)
+    {
+        if (gridSize <= 0f)
+            return value;
+        return Mathf.Round(value / gridSize) * gridSize;
+    }
+
     static IEnumerator MoveCoroutine(Entity charEntity, Entity targetEntity)
     {
         var sleepYield = new WaitForSeconds(0.033f);
@@ -618,11 +640,12 @@ class BuildService
         bool snapXEnabled = Core.BuildService.IsXSnappingEnabled(charEntity);
         bool snapYEnabled = Core.BuildService.IsYSnappingEnabled(charEntity);
         bool snapZEnabled = Core.BuildService.IsZSnappingEnabled(charEntity);
+        float gridSize = Core.BuildService.GetGridSize(charEntity);
         float yOffset = Core.BuildService.GetYOffset(charEntity);
 
-        float x = snapXEnabled ? Mathf.Round(aimPos.x) : aimPos.x;
+        float x = snapXEnabled ? SnapTo(aimPos.x, gridSize) : aimPos.x;
         float y = snapYEnabled ? Mathf.Floor(aimPos.y) + yOffset : aimPos.y + yOffset;
-        float z = snapZEnabled ? Mathf.Round(aimPos.z) : aimPos.z;
+        float z = snapZEnabled ? SnapTo(aimPos.z, gridSize) : aimPos.z;
 
         if (targetEntity.Has<StaticTransformCompatible>())
         {

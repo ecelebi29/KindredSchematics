@@ -87,6 +87,10 @@ The Palette System offers a powerful toolset for managing prefabs with ease:
 - `.build zsnap`
   - Toggles Z-value snapping when placing objects in build mode
 
+- `.build gridsize (#)`
+  - Sets the snap grid size when placing objects in build mode  
+  - Allowed values: 0.125, 0.25, 0.5, 1.0 (default)
+
 - `.build snapstatus`
   - Shows current snapping settings for build mode
 

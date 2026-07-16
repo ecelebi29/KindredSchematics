@@ -682,6 +682,21 @@ namespace KindredSchematics.Commands
             }
         }
 
+        [Command("gridsize", description: "Sets the snap grid size when placing objects in build mode", adminOnly: true)]
+        public static void SetGridSize(ChatCommandContext ctx, float size)
+        {
+            var charEntity = ctx.Event.SenderCharacterEntity;
+
+            if (Array.IndexOf(Core.BuildService.AllowedGridSizes, size) < 0)
+            {
+                ctx.Reply($"Invalid grid size. Allowed values: <color=yellow>{string.Join(", ", Core.BuildService.AllowedGridSizes.Select(s => s.ToString("0.0##")))}</color>");
+                return;
+            }
+
+            Core.BuildService.SetGridSize(charEntity, size);
+            ctx.Reply($"Grid size set to <color=green>{size:0.0##}</color>");
+        }
+
         [Command("snapstatus", description: "Shows current snapping settings for build mode", adminOnly: true)]
         public static void ShowSnappingStatus(ChatCommandContext ctx)
         {
@@ -696,6 +711,7 @@ namespace KindredSchematics.Commands
                       $"X Snapping: {(xSnap ? "<color=green>ON</color>" : "<color=red>OFF</color>")}\n" +
                       $"Y Snapping: {(ySnap ? "<color=green>ON</color>" : "<color=red>OFF</color>")}\n" +
                       $"Z Snapping: {(zSnap ? "<color=green>ON</color>" : "<color=red>OFF</color>")}\n" +
+                      $"Grid Size: <color=yellow>{Core.BuildService.GetGridSize(charEntity):0.0##}</color>\n" +
                       $"Y Offset: <color=yellow>{yOffset}</color>\n" +
                       $"Using Plane Mode: {(planeMode ? "<color=green>YES</color> (AimPositionPlane)" : "<color=yellow>NO</color> (AimPosition)")}");
         }
